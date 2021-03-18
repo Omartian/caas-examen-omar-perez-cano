@@ -3,7 +3,7 @@ const http = require('http');
 const hostname = '127.0.0.1';
 const port = 3000;
 const { parse } = require('querystring');
-const axios = require('axios')
+const fetch = require('node-fetch');
 
 const server = http.createServer((req, res) => {
     if (req.method === 'POST') {
@@ -16,15 +16,15 @@ const server = http.createServer((req, res) => {
         data = parse(body);
         console.log(parse(data.text));
 
-        axios.post('paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone:443', {todo: data.text})
-        .then(res => {
-            console.log(`statusCode: ${res.statusCode}`)
-            console.log(res)
-        })
-        .catch(error => {console.error(error)});
-
-
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: data
+        }
         
+        const res = await fetch('https://paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone', options);
+        
+
         res.end(`
         <!doctype html>
         <html>
