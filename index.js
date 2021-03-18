@@ -1,7 +1,7 @@
 const http = require('http');
 
-const hostname = '127.0.0.1';
-const port = 3000;
+const hostname = '0.0.0.0';
+const port = 8081;
 const { parse } = require('querystring');
 const fetch = require('node-fetch');
 let text = "";
@@ -16,12 +16,13 @@ const server = http.createServer((req, res) => {
         <!doctype html>
         <html>
         <body>
+            <h2>Tone Analyzer using IBM Cloud Node app example - Omar Cano </h2>
             <form action="/" method="post">
                 <input type="text" name="text" /><br />
                 <button>Enviar</button>
             </form>
-            <p>${text}<p>
-            <p>El texto ingresado es ${tone_name} en un ${score * 100}%<p>
+            <p>${text}</p>
+            <p>El texto ingresado ${tone_name} ${score}</p>
         </body>
         </html>
       `);
@@ -31,6 +32,7 @@ const server = http.createServer((req, res) => {
         <!doctype html>
         <html>
         <body>
+        <h2>Tone Analyzer using IBM Cloud Node app example - Omar Cano </h2>
             <form action="/" method="post">
                 <input type="text" name="text" /><br />
                 <button>Enviar</button>
@@ -66,8 +68,13 @@ function collectRequestData(request, callback) {
         fetch('https://paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone', options)
         .then(response => response.text())
         .then(data => {
-            score = JSON.parse(data).result.document_tone.tones[0].score;
-            tone_name = JSON.parse(data).result.document_tone.tones[0].tone_name;
+            if (JSON.parse(data).result.document_tone.tones[0] === undefined) {
+                score = "";
+                tone_name = "no es valido";
+            } else {
+                score = "en un " + JSON.parse(data).result.document_tone.tones[0].score*100 + "%";
+                tone_name = "es " + JSON.parse(data).result.document_tone.tones[0].tone_name;
+            };
             callback(parse(body))
         })
         .catch(error => {
