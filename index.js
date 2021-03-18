@@ -4,11 +4,11 @@ const hostname = '127.0.0.1';
 const port = 3000;
 const { parse } = require('querystring');
 const fetch = require('node-fetch');
+const tones = {};
 
 const server = http.createServer((req, res) => {
     if (req.method === 'POST') {
         collectRequestData(req, result => {
-            console.log(result);
             res.end(`Parsed data belonging to ${result.text}`);
         });
     } else {
@@ -38,7 +38,7 @@ function collectRequestData(request, callback) {
             body += chunk.toString(); // convert Buffer to string
         });
         request.on('end', async () => {
-            callback(parse(body));
+            callback( parse(body));
             console.log(parse(body));
             data = parse(body);
             console.log(parse(data.text));
@@ -49,9 +49,17 @@ function collectRequestData(request, callback) {
             body: JSON.stringify(data)
         }
         
-        res = await fetch('https://paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone', options);
-
-        console.log(res.body);
+        fetch('https://paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone', options)
+        .then(response => response.text())
+        .then(data => {
+            const {result} = data               
+            console.log(JSON.parse(data).result.document_tone.tones[0].score);
+            console.log(JSON.parse(data).result.document_tone.tones[0].tone_name);
+            //tones = json.result.document_tone.tones[0]
+        })
+        .catch(error => {
+            console.error(error);
+        });
         });
         } else {
             callback(null);
