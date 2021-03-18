@@ -4,12 +4,27 @@ const hostname = '127.0.0.1';
 const port = 3000;
 const { parse } = require('querystring');
 const fetch = require('node-fetch');
-const tones = {};
+let text = "";
+let score = 0.0;
+let tone_name = "";
+
 
 const server = http.createServer((req, res) => {
     if (req.method === 'POST') {
         collectRequestData(req, result => {
-            res.end(`Parsed data belonging to ${result.text}`);
+            res.end(`
+        <!doctype html>
+        <html>
+        <body>
+            <form action="/" method="post">
+                <input type="text" name="text" /><br />
+                <button>Enviar</button>
+            </form>
+            <p>${text}<p>
+            <p>El texto ingresado es ${tone_name} en un ${score * 100}%<p>
+        </body>
+        </html>
+      `);
         });
     } else {
       res.end(`
@@ -35,31 +50,30 @@ function collectRequestData(request, callback) {
     if(request.headers['content-type'] === FORM_URLENCODED) {
         let body = '';
         request.on('data', chunk => {
-            body += chunk.toString(); // convert Buffer to string
+            body += chunk.toString();
         });
         request.on('end', async () => {
-            callback( parse(body));
-            console.log(parse(body));
             data = parse(body);
-            console.log(parse(data.text));
+            text = JSON.stringify(data)
 
+            
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
+            body: text
         }
         
         fetch('https://paas-examen-omar-perez-cano.us-south.cf.appdomain.cloud/get-tone', options)
         .then(response => response.text())
         .then(data => {
-            const {result} = data               
-            console.log(JSON.parse(data).result.document_tone.tones[0].score);
-            console.log(JSON.parse(data).result.document_tone.tones[0].tone_name);
-            //tones = json.result.document_tone.tones[0]
+            score = JSON.parse(data).result.document_tone.tones[0].score;
+            tone_name = JSON.parse(data).result.document_tone.tones[0].tone_name;
+            callback(parse(body))
         })
         .catch(error => {
             console.error(error);
         });
+        
         });
         } else {
             callback(null);
